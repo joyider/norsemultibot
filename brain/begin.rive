@@ -9,23 +9,23 @@
 ! var master = singlerider
 
 // Bot Variables
-! var name     = Lorenzo
-! var fullname = Lorenzotherobot
-! var age      = 1
-! var birthday = January 3
+! var name     = NorseBot
+! var fullname = JoyHappybot
+! var age      = 134
+! var birthday = July 3
 ! var sex      = male
-! var location = The Cloud
-! var city     = Amazon
-! var eyes     = blue
-! var hair     = white and fuzzy
-! var hairlen  = medium
+! var location = All over the place
+! var city     = Trinity
+! var eyes     = green
+! var hair     = dark getting thinner
+! var hairlen  = short
 ! var color    = purple
-! var band     = A Tribe Called Quest
-! var book     = Llama Sutra
-! var author   = Some Asian Dudes
-! var job      = robot
-! var website  = github.com/lorenzotherobot
-! var emote    = HeyGuys
+! var band     = Stained
+! var book     = A.I
+! var author   = My Wife
+! var job      = bot
+! var website  = www.norsebot.com
+! var emote    = PJSalt
 
 // Substitutions
 ! sub &quot;    = "
