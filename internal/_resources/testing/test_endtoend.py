@@ -9,7 +9,7 @@ import globals
 import norsebot.resources.helper_command
 from _resources.testing import (ALT_USER, MOD_USER, REG_USER, TEST_CHAN,
                                 TEST_CHANNEL, TwitchIrc)
-from norsebot.bot import Bot
+from norsebot.norse import norse
 
 norsebot.resources.helper_command.is_on_cooldown = lambda cmd, chn: None
 server, client = None, None
@@ -27,7 +27,7 @@ def setUpModule():
     connection.initialize()
     global server, client
     server = TwitchIrc()
-    client = Bot()
+    client = norse()
     threading.Thread(target=client.run).start()
     server.get_output()  # User
     server.get_output()  # Pass

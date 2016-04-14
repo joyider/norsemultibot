@@ -2,7 +2,7 @@ import sys
 from threading import Thread
 
 import resources.helper_command as commands
-import norsebot.resources.parser_commands as command_headers
+import norsebot.resources.parser_commands as command_list
 import norsebot.resources.core.cron as cron
 import norsebot.resources.core.rive as rive
 import norsebot.resources.core.twitch as twitch
@@ -31,7 +31,7 @@ PASSWORD = config["oauth_password"]
 ECHOERS = {}
 
 
-class Bot(object):
+class norse(object):
 
     def __init__(self):
         self.IRC = IRC(config)
@@ -40,7 +40,7 @@ class Bot(object):
         self.config = config
         self.crons = self.config.get("cron", {})
         cron.initialize(self.IRC, self.crons)
-        command_headers.initalizeCommands(config)
+        command_list.initalizeCommands(config)
         self.run()
 
     def get_custom_command(self, channel, message, username):
@@ -121,14 +121,14 @@ class Bot(object):
         if action == "join":
             self.IRC.join_channels(
                 self.IRC.channels_to_string([channel]), "chat")
-            command_headers.initalizeCommandsAfterRuntime(channel)
+            command_list.initalizeCommandsAfterRuntime(channel)
             self.IRC.send_message(channel, "Hi HeyGuys")
             print "JOINING", channel
         if action == "leave":
             self.IRC.send_message(channel, "Bye HeyGuys")
             self.IRC.leave_channels(
                 self.IRC.channels_to_string([channel]), "chat")
-            command_headers.deinitializeCommandsAfterRuntime(channel)
+            command_list.deinitializeCommandsAfterRuntime(channel)
             print "LEAVING", channel
 
     def handle_command(self, command, channel, username, message):

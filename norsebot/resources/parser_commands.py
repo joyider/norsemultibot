@@ -262,8 +262,7 @@ commands = {
         'limit': 0,
         'argc': 1,
         'return': 'command',
-        'usage': '!loyalty [username]',
-        'ul': 'mod'
+        'usage': '!loyalty [username]'
     },
     '!addquote': {
         'limit': 0,
