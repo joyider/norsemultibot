@@ -78,7 +78,6 @@ class norse(object):
             if username == "twitchnotify":
                 self.check_for_sub(channel, username, message)
         if spam_detector(username, message) is True:
-            print("SPAM!!")
             self.ban_for_spam(channel, username, message)
         chan = channel.lstrip("#")
         if message[0] == "!":
