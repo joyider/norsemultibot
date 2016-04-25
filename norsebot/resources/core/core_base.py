@@ -74,7 +74,7 @@ class Message(object):
 ONLINE = 'online'
 OFFLINE = 'offline'
 
-class Attendance(object)
+class Attendance(object):
 	"""
 	purpose of this class is to manifest the attendance of an single user or user in chat
 	"""
@@ -263,7 +263,7 @@ class CoreEngine(CoreBase):
 		"""
 		pass
 
-	def chatleft_callback:
+	def chatleft_callback(self):
 		"""
 		To be implemented in norse.py
 		:return:
@@ -286,11 +286,12 @@ class CoreEngine(CoreBase):
 		"""
 		while True:
 			try:
+				pass
 				#if CONNECTION BASED ON PROTOCOL
 			except KeyboardInterrupt:
 				#LOG
 				break
-			except
+			except:
 				log.exception("Can not start ...(core_loop)")
 
 	def reset_connection_count(self):
