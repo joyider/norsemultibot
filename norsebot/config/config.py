@@ -5,7 +5,7 @@ import norsebot.resources.commands.pokemon as pokemon
 import norsebot.resources.commands.treats as treats
 import norsebot.resources.core.twitch as twitch
 
-channels_to_join = ['#dreamhackcs']
+channels_to_join = ['#joyider', '#azzaruz']
 
 for channel in channels_to_join:
     channel = channel.lstrip('#')
@@ -19,7 +19,6 @@ config = {
 
     'debug': True,
     'log_messages': True,
-
 
     'channels': channels_to_join,
 
