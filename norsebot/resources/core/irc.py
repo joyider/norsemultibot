@@ -162,3 +162,84 @@ class IRC:
         if kind == "chat":
             self.sock[kind].send('PART %s\r\n' % channels)
         pp('Left channels.')
+
+ def whisper(self, username, channel, message):
+        if check_for_blacklist(username):
+            return
+        message = str(message.lstrip("!"))
+        resp = rive.Conversation(self).run(username, message)[:350]
+        save_message(username, "WHISPER", message)
+        if resp:
+            print resp
+            save_message(BOT_USER, "WHISPER", resp)
+            self.send_whisper(username, str(resp))
+            return
+
+  def priv_message(self, username, channel, message):
+        if (channel == "#" + PRIMARY_CHANNEL or
+                channel == "#" + SUPERUSER or
+                channel == "#" + TEST_USER):
+            if username == "twitchnotify":
+                self.check_for_sub(channel, username, message)
+        if spam_detector(username, message) is True:
+            self.ban_for_spam(channel, username, message)
+        chan = channel.lstrip("#")
+        if message[0] == "!":
+            message_split = message.split()
+            fetch_command = get_custom_command(chan, message_split[0])
+            if len(fetch_command) > 0:
+                if message_split[0] == fetch_command[0][1]:
+                    resp = self.get_custom_command(
+                        channel, message_split, username)
+                    if resp:
+                        self.send_message(channel, resp)
+        save_message(username, channel, message)
+        part = message.split(' ')[0]
+        valid = False
+        if commands.is_valid_command(message):
+            valid = True
+        if commands.is_valid_command(part):
+            valid = True
+        if not valid:
+            return
+        resp = self.handle_command(
+            part, channel, username, message)
+        if resp:
+            self.send_message(channel, resp)
+        return
+
+    def run(self):
+
+        def get_incoming_data(kind):
+            while True:
+                try:
+                    data = self.nextMessage(kind)
+                    if kind == "chat":
+                        message = self.check_for_message(data)
+                    if kind == "whisper":
+                        message = self.check_for_whisper(data)
+                    if not message:
+                        continue
+                    if message:
+                        if kind == "chat":
+                            data = self.get_message(data)
+                        if kind == "whisper":
+                            data = self.get_whisper(data)
+                        message_dict = data
+                        channel = message_dict.get('channel')
+                        message = message_dict.get('message')
+                        username = message_dict.get('username')
+                        print "->*", username, channel, message
+                        if message and kind == "chat":
+                            #Thread(target=self.priv_message, args=(
+                            #    username, channel, message)).start()
+                            self.priv_message(username, channel, message)
+                        if message and kind == "whisper":
+                            Thread(target=self.whisper, args=(
+                                username, channel, message)).start()
+                    continue
+                except Exception as error:
+                    print error
+
+        Thread(target=get_incoming_data, args=("whisper",)).start()
+        Thread(target=get_incoming_data, args=("chat",)).start()

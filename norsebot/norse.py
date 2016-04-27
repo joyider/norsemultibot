@@ -31,7 +31,7 @@ PASSWORD = config["oauth_password"]
 ECHOERS = {}
 
 
-class norse(object):
+class norse(object):    #Change cname to twitch
 
     def __init__(self):
         self.IRC = IRC(config)
@@ -70,53 +70,7 @@ class norse(object):
 		self.IRC.send_message(channel, timeout)
 		save_message(BOT_USER, channel, message)
 
-
-    def priv_message(self, username, channel, message):
-        if (channel == "#" + PRIMARY_CHANNEL or
-                channel == "#" + SUPERUSER or
-                channel == "#" + TEST_USER):
-            if username == "twitchnotify":
-                self.check_for_sub(channel, username, message)
-        if spam_detector(username, message) is True:
-            self.ban_for_spam(channel, username, message)
-        chan = channel.lstrip("#")
-        if message[0] == "!":
-            message_split = message.split()
-            fetch_command = get_custom_command(chan, message_split[0])
-            if len(fetch_command) > 0:
-                if message_split[0] == fetch_command[0][1]:
-                    resp = self.get_custom_command(
-                        channel, message_split, username)
-                    if resp:
-                        self.IRC.send_message(channel, resp)
-        save_message(username, channel, message)
-        part = message.split(' ')[0]
-        valid = False
-        if commands.is_valid_command(message):
-            valid = True
-        if commands.is_valid_command(part):
-            valid = True
-        if not valid:
-            return
-        resp = self.handle_command(
-            part, channel, username, message)
-        if resp:
-            self.IRC.send_message(channel, resp)
-        return
-
-    def whisper(self, username, channel, message):
-        if check_for_blacklist(username):
-            return
-        message = str(message.lstrip("!"))
-        resp = rive.Conversation(self).run(username, message)[:350]
-        save_message(username, "WHISPER", message)
-        if resp:
-            print resp
-            save_message(BOT_USER, "WHISPER", resp)
-            self.IRC.send_whisper(username, str(resp))
-            return
-
-    def join_part(self, action, channel):
+      def join_part(self, action, channel):
         if action == "join":
             self.IRC.join_channels(
                 self.IRC.channels_to_string([channel]), "chat")
@@ -234,38 +188,3 @@ months straight and is getting {2} vouchers for loyalty!".format(
                 save_message(BOT_USER, channel, resp)
         except Exception as error:  # pragma: no cover
             print error
-
-    def run(self):
-
-        def get_incoming_data(kind):
-            while True:
-                try:
-                    data = self.IRC.nextMessage(kind)
-                    if kind == "chat":
-                        message = self.IRC.check_for_message(data)
-                    if kind == "whisper":
-                        message = self.IRC.check_for_whisper(data)
-                    if not message:
-                        continue
-                    if message:
-                        if kind == "chat":
-                            data = self.IRC.get_message(data)
-                        if kind == "whisper":
-                            data = self.IRC.get_whisper(data)
-                        message_dict = data
-                        channel = message_dict.get('channel')
-                        message = message_dict.get('message')
-                        username = message_dict.get('username')
-                        print "->*", username, channel, message
-                        if message and kind == "chat":
-                            Thread(target=self.priv_message, args=(
-                                username, channel, message)).start()
-                        if message and kind == "whisper":
-                            Thread(target=self.whisper, args=(
-                                username, channel, message)).start()
-                    continue
-                except Exception as error:
-                    print error
-
-        Thread(target=get_incoming_data, args=("whisper",)).start()
-        Thread(target=get_incoming_data, args=("chat",)).start()
