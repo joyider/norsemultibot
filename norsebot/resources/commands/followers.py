@@ -1,4 +1,4 @@
-from norsebot.resources.core.twitch import *
+from norsebot.resources.core.streams.twitch import *
 
 
 def followers(**kwargs):

@@ -1,8 +1,7 @@
 import re
 from bisect import bisect_left
 
-from norsebot.resources import banned_words
-
+from norsebot.norsemultibot import banned_words
 
 
 def spam_detector(username, message):

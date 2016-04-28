@@ -1,6 +1,6 @@
 import random
 
-import norsebot.resources.core.twitch as twitch
+import norsebot.resources.core.streams.twitch as twitch
 
 
 def winner(**kwargs):

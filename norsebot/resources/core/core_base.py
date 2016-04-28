@@ -12,28 +12,39 @@
 # Filename: urlest by: andrek
 # Timesamp: 4/25/16 :: 7:46 PM
 
-from abc import abstractmethod, abstractproperty, ABCMeta
-from norsebot.resources.helper_norse import compability_str
-import os
-import sys
 import logging
+import inspect
+import re
+from abc import abstractmethod, abstractproperty, ABCMeta
 from collections import deque, defaultdict
+
+from norsebot.resources.helper_norse import *
 
 log = logging.getLogger(__name__)
 
-class CoreBase(metaclass = ABCMeta):
+class CoreBase(object):
 	"""
 	This class is only to as to what to expect from the CoreBase. Always use the properties of used class.
 	Don't ever use this outside of the CoreEngine
 	"""
+	__metaclass__ = ABCMeta
 	pass
 
 class Message(object):
-	def __init__(self, msg='', kind='chat', from_user='', to_user=''):
+	def __init__(self, stream, msg='', kind='chat', from_user='', to_user=''):
 		self._msg = compability_str(msg)
+		self._stream = stream
 		self._kind = kind
 		self._from_user = from_user
 		self._to_user = to_user
+
+		class_stack=inspect.stack()
+		self._caller_class = class_stack[1][0].f_locals["self"].__class__
+
+	def __str__(self):
+		return " " + re.sub(r"[^A-Za-z]+", '',str(self._caller_class).rsplit('.', 1)[-1]) + " : " + str(self._stream) + " : "\
+		       + str(self._kind) + " : " + str(self._to_user)\
+		       + " : " + str(self._from_user) + " : " + str(self._msg)
 
 	def clone(self):
 		return Message(self._msg, self._kind, self._from_user, self._to_user)
@@ -61,6 +72,18 @@ class Message(object):
 	@kind.setter
 	def kind(self, kind):
 		self._kind = kind
+
+	@property
+	def stream(self):
+		return self._stream
+
+	@stream.setter
+	def stream(self, stream):
+		self._stream = stream
+
+	@property
+	def protocol(self):
+		return self._caller_class
 
 	@property
 	def msg(self):
@@ -128,13 +151,14 @@ class Attendance(object):
 	def __unicode__(self):
 		return str(self.__str__())
 
-class chatroom_MU(CoreBase):
+
+class ChatRoom(CoreBase):
 	"""
 	Manifistation/Interface of a chat room full of people (Multi User)
 	"""
 
 	@abstractmethod
-	def join(self, username=None, password=None):
+	def connect(self, username=None, password=None):
 		pass
 
 	@abstractmethod

@@ -1,7 +1,7 @@
 #!/usr/bin/env python2.7
 
-from norsebot.norse import norse
+from norsebot.norsemultibot import NorseBot
 
 
 if __name__ == '__main__':
-    norse()
+    NorseBot()

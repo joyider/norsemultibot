@@ -1,5 +1,5 @@
 import globals
-from norsebot.resources.core.twitch import get_dict_for_users
+from norsebot.resources.core.streams.twitch import get_dict_for_users
 from norsebot.resources.probes.moderators import get_moderator
 from norsebot.resources.probes.pokemons import *
 

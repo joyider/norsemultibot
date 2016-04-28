@@ -4,18 +4,33 @@ import re
 import socket
 import sys
 import time
+import logging
+import threading
+import Queue
 
 import requests
 from norsebot.resources.helper_norse import *
+from norsebot.resources.core.core_base import Message
 
 threshold = 5 * 60  # five minutes, make this whatever you want
 
+logging.basicConfig(level=logging.DEBUG,
+                                        format='(%(threadName)-9s) %(message)s',)
 
-class IRC:
 
-    def __init__(self, config):
+
+
+class Irc(threading.Thread):
+
+    def __init__(self, username, password, stream, channels, kind, queue):
+        super(Irc, self).__init__()
+        self.msg_queue = queue
+        self.kind = kind
         self.sock = {}
-        self.config = config
+        self.username = username
+        self.password = password
+        self.channels = channels
+        self.stream = stream
         self.ircBuffer = {}
         self.ircBuffer["whisper"] = ""
         self.ircBuffer["chat"] = ""
@@ -26,7 +41,7 @@ class IRC:
         if "\r\n" not in self.ircBuffer[kind]:
             read = self.sock[kind].recv(1024)
             if not read:
-                print "Connection was lost"
+                print("Connection was lost")
                 self.sock[kind].shutdown
                 self.sock[kind].close
                 self.connect(kind)
@@ -119,28 +134,27 @@ class IRC:
         port = 6667
         if kind == "whisper":
             server = "irc.chat.twitch.tv"
-            print "Connecting to {0}:{1}".format(server, port)
+            print("Connecting to {0}:{1}").format(server, port)
             self.connect_phases(sock, server, port, kind)
             self.join_channels([], kind)
         if kind == "chat":
             server = "irc.chat.twitch.tv"
-            print "Connecting to {0}:{1}".format(server, port)
+            print("Connecting to {0}:{1}").format(server, port)
             self.connect_phases(sock, server, port, kind)
-            self.join_channels(self.channels_to_string(
-                self.config['channels']), kind)
+            self.join_channels(self.channels_to_string(self.channels), self.kind)
 
         sock.settimeout(None)
 
     def connect_phases(self, sock, server, port, kind):
         sock.connect((server, port))
-        pp("Sending Username " + self.config["username"])
-        sock.send('USER %s\r\n' % self.config['username'])
-        pp("Sending Password " + self.config["oauth_password"])
-        sock.send('PASS %s\r\n' % self.config['oauth_password'])
-        pp("Sending Nick " + self.config["username"])
-        sock.send('NICK %s\r\n' % self.config['username'])
-        self.sock[kind] = sock
-        loginMsg = self.nextMessage(kind)
+        pp("Sending Username " + self.username)
+        sock.send('USER %s\r\n' % self.username)
+        pp("Sending Password " + self.password)
+        sock.send('PASS %s\r\n' % self.password)
+        pp("Sending Nick " + self.username)
+        sock.send('NICK %s\r\n' % self.username)
+        self.sock[kind]=sock
+        loginMsg=self.nextMessage(kind)
         if kind == "chat":
             if "376" not in self.nextMessage(kind):
                 pass
@@ -163,19 +177,19 @@ class IRC:
             self.sock[kind].send('PART %s\r\n' % channels)
         pp('Left channels.')
 
- def whisper(self, username, channel, message):
+    def whisper(self, username, channel, message):
         if check_for_blacklist(username):
             return
-        message = str(message.lstrip("!"))
-        resp = rive.Conversation(self).run(username, message)[:350]
+        message=str(message.lstrip("!"))
+        resp=rive.Conversation(self).run(username, message)[:350]
         save_message(username, "WHISPER", message)
         if resp:
             print resp
             save_message(BOT_USER, "WHISPER", resp)
             self.send_whisper(username, str(resp))
             return
-
-  def priv_message(self, username, channel, message):
+	"""
+    def priv_message(self, username, channel, message):
         if (channel == "#" + PRIMARY_CHANNEL or
                 channel == "#" + SUPERUSER or
                 channel == "#" + TEST_USER):
@@ -183,63 +197,55 @@ class IRC:
                 self.check_for_sub(channel, username, message)
         if spam_detector(username, message) is True:
             self.ban_for_spam(channel, username, message)
-        chan = channel.lstrip("#")
+        chan=channel.lstrip("#")
         if message[0] == "!":
-            message_split = message.split()
-            fetch_command = get_custom_command(chan, message_split[0])
+            message_split=message.split()
+            fetch_command=get_custom_command(chan, message_split[0])
             if len(fetch_command) > 0:
                 if message_split[0] == fetch_command[0][1]:
-                    resp = self.get_custom_command(
+                    resp=self.get_custom_command(
                         channel, message_split, username)
                     if resp:
                         self.send_message(channel, resp)
         save_message(username, channel, message)
-        part = message.split(' ')[0]
-        valid = False
+        part=message.split(' ')[0]
+        valid=False
         if commands.is_valid_command(message):
-            valid = True
+            valid=True
         if commands.is_valid_command(part):
-            valid = True
+            valid=True
         if not valid:
             return
-        resp = self.handle_command(
+        resp=self.handle_command(
             part, channel, username, message)
         if resp:
             self.send_message(channel, resp)
         return
+    """
 
     def run(self):
 
-        def get_incoming_data(kind):
-            while True:
-                try:
-                    data = self.nextMessage(kind)
-                    if kind == "chat":
-                        message = self.check_for_message(data)
-                    if kind == "whisper":
-                        message = self.check_for_whisper(data)
-                    if not message:
-                        continue
-                    if message:
-                        if kind == "chat":
-                            data = self.get_message(data)
-                        if kind == "whisper":
-                            data = self.get_whisper(data)
-                        message_dict = data
-                        channel = message_dict.get('channel')
-                        message = message_dict.get('message')
-                        username = message_dict.get('username')
-                        print "->*", username, channel, message
-                        if message and kind == "chat":
-                            #Thread(target=self.priv_message, args=(
-                            #    username, channel, message)).start()
-                            self.priv_message(username, channel, message)
-                        if message and kind == "whisper":
-                            Thread(target=self.whisper, args=(
-                                username, channel, message)).start()
+        while True:
+            try:
+                data=self.nextMessage(self.kind)
+                if self.kind == "chat":
+                    message=self.check_for_message(data)
+                if self.kind == "whisper":
+                    message=self.check_for_whisper(data)
+                if not message:
                     continue
-                except Exception as error:
-                    print error
+                if message:
+                    if self.kind == "chat":
+                        data=self.get_message(data)
+                    if self.kind == "whisper":
+                        data=self.get_whisper(data)
+                    message_dict=data
+                    channel=message_dict.get('channel')
+                    message=message_dict.get('message')
+                    username=message_dict.get('username')
+                    print "(IRC)->*", username, channel, message
+                    self.msg_queue.put(Message(self.stream, message, self.kind, username, channel))
+                continue
+            except Exception as error:
+                print error
 
-        Thread(target=get_incoming_data, args=("whisper",)).start()
-        Thread(target=get_incoming_data, args=("chat",)).start()

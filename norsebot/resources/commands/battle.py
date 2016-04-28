@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from norsebot.resources.core.twitch import get_dict_for_users
+from norsebot.resources.core.streams.twitch import get_dict_for_users
 from norsebot.resources.probes.pokemons import *
 
 

@@ -3,7 +3,7 @@ global config
 import globals
 import norsebot.resources.commands.pokemon as pokemon
 import norsebot.resources.commands.treats as treats
-import norsebot.resources.core.twitch as twitch
+import norsebot.resources.core.streams.twitch as twitch
 
 channels_to_join = ['#joyider']
 
