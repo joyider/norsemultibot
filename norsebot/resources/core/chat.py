@@ -98,6 +98,6 @@ class Chat(threading.Thread):
 			return
 
 	def handle_command(self, *args, **kwargs):
-		# Todo:: Handle the command in a generic way to cap for multiple protcols
+		# Todo:: Handle the command in a generic way to cap for multiple protocols
 
 
