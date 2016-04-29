@@ -24,7 +24,6 @@ for i, val in enumerate(BOT_LIST):
 		print "For Stream provider is {0}: " \
 		      "Channel are: {1} ".format(stream,
 		                                 val['channels'][stream])
-		#test
 
 class NorseBot:
 	def __init__(self):
@@ -44,5 +43,5 @@ class NorseBot:
 		while True:
 			if not self.queue.empty():
 				item = self.queue.get()
-				#print item
+				print item
 		return
