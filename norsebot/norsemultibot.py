@@ -24,6 +24,7 @@ for i, val in enumerate(BOT_LIST):
 		print "For Stream provider is {0}: " \
 		      "Channel are: {1} ".format(stream,
 		                                 val['channels'][stream])
+		#test
 
 class NorseBot:
 	def __init__(self):
